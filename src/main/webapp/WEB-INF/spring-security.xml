@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <security:debug />
+
+    <security:global-method-security jsr250-annotations="enabled" pre-post-annotations="enabled" secured-annotations="enabled" />
+
+    <!--<security:http use-expressions="true">
+        <security:intercept-url pattern="/**" access="permitAll" />
+        <security:form-login />
+        <security:logout logout-success-url="/" delete-cookies="JSESSIONID"/>
+        &lt;!&ndash; <security:remember-me />&ndash;&gt;
+        <security:session-management invalid-session-url="/">
+            <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" />
+        </security:session-management>
+    </security:http>-->
+    <security:http use-expressions="true">
+        <security:intercept-url pattern="/admin/**" access="hasAnyRole('ADMIN58','USUDE58','JPFAC58','JPDEP58')"/>
+        <security:intercept-url pattern="/rest/cas/worker/**" access="hasAnyRole('USUPERF59','ADMIN59','USUDE59')"/>
+        <security:intercept-url pattern="/rest/resoluciones/**" access="hasAnyRole('ADMIN60','USUDE60')"/>
+        <security:intercept-url pattern="/api/solicitudes/**" access="hasAnyRole('ADMIN51')"/>
+        <security:intercept-url pattern="/rest/cas/profile/**" access="hasAnyRole('ADMIN52')" />
+        <security:intercept-url pattern="/rest/cas/roles/**" access="hasAnyRole('ADMIN52')" />
+        <security:intercept-url pattern="/api/planillasCAS/**" access="hasAnyRole('ADMIN53','USUDE53')"/>
+        <security:intercept-url pattern="/rest/reportes/**" access="hasAnyRole('ADMIN63','USUDE63','JPFAC63','JPDEP63')" />
+        <security:intercept-url pattern="/api/servidoresCAS/**" access="hasAnyRole('ADMIN53','USUDE53')"/>
+        <security:intercept-url pattern="/rest/cas/plazas/**" access="hasAnyRole('ADMIN54','USUDE54')"/>
+        <security:intercept-url pattern="/api/cuadro_nominal/**" access="hasAnyRole('ADMIN61','JPFAC61','JPDEP61')"/>
+        <security:intercept-url pattern="/rest/cas/serv/**" access="hasAnyRole('ADMIN55','ADMIN54','ADMIN60','USUDE54','USUDE55','USUDE60')"/>
+        <security:intercept-url pattern="/api/legajos/**" access="hasAnyRole('ADMIN56','USUDE56')"/>
+        <security:intercept-url pattern="/api/estado_condicion/**" access="hasAnyRole('ADMIN57','USUDE57')" />
+        <security:intercept-url pattern="/api/unidades/**" access="permitAll"/>
+
+        <!--<security:intercept-url pattern="/perfil/**" access="hasRole('userperfil')"/>-->
+        <security:intercept-url pattern="/perfil/**" access="hasAnyRole('USUPERF59','ADMIN59','USUDE59','JPFAC59','JPDEP59')"/>
+        <security:intercept-url pattern="/**" access="permitAll"/>
+        <!--<security:form-login /> para login default-->
+
+        <security:form-login login-page="/"/>
+        <security:logout logout-success-url="/" delete-cookies="JSESSIONID"/>
+        <!--<security:remember-me/>-->
+        <security:session-management invalid-session-url="/">
+            <security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true"/>
+        </security:session-management>
+    </security:http>
+
+
+    <!--<bean id="encoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder"/>-->
+
+    <bean id="userDetailsService" class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="enableAuthorities" value="true"/>
+        <property name="usersByUsernameQuery">
+            <value>
+                SELECT t_mail USE_USERNAME,obtener_pass USE_PASSWORD,est
+                FROM QPRODATAQUIPU.tb_hist_usu_perf
+                WHERE t_mail=?
+                AND est='1'
+                AND modcod=24
+            </value>
+        </property>
+        <property name="authoritiesByUsernameQuery">
+            <value>
+                SELECT TH.t_mail USE_USERNAME,tp.perf_desc||rp.rol_id USE_ROL
+                FROM QPRODATAQUIPU.tb_hist_usu_perf TH,QPRODATAQUIPU.tb_perfil TP,QPRODATAQUIPU.rol_perfil RP
+                WHERE TH.t_mail=?
+                AND TH.est='1'
+                AND TH.modcod=24
+                AND TP.perf_cod = TH.perf_cod
+                and tp.perf_cod = rp.perf_cod
+            </value>
+        </property>
+    </bean>
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="userDetailsService">
+        </security:authentication-provider>
+    </security:authentication-manager>
+    <!--<security:authentication-manager>
+        <security:authentication-provider>
+            <security:password-encoder ref="encoder"/>
+            <security:user-service>
+                &lt;!&ndash; Password: "koala" for both &ndash;&gt;
+                <security:user name="user"
+                               password="4efe081594ce25ee4efd9f7067f7f678a347bccf2de201f3adf2a3eb544850b465b4e51cdc3fcdde"
+                               authorities="user"/>
+                <security:user name="admin"
+                               password="4efe081594ce25ee4efd9f7067f7f678a347bccf2de201f3adf2a3eb544850b465b4e51cdc3fcdde"
+                               authorities="admin"/>
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>-->
+
+</beans>

@@ -1,0 +1,8 @@
+@font-face{
+    font-family: "AvenirPro";
+    src:url("../fonts/AvenirNextLTPro-Regular.otf");
+
+}
+*{
+    font-family: "AvenirPro" !important;
+}
